@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:share/share.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+
+//Riverpod化
+final textProvider = StateProvider((ref) => '');
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    //ProviderScopeを宣言
+    ProviderScope(child: MyApp()),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -18,18 +26,15 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
+//HookWidgetを利用する
+class MyHomePage extends HookWidget {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  String _text = '';
-
   @override
   Widget build(BuildContext context) {
+    //useProviderで宣言
+    final textState = useProvider(textProvider);
+    //TextEditingController controller = TextEditingController();
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Flutter share'),
@@ -39,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () {
               if (_formKey.currentState!.validate()) {
                 _formKey.currentState!.save();
-                Share.share(_text);
+                Share.share(textState.state);
               }
             },
           ),
@@ -52,12 +57,14 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: EdgeInsets.all(20.0),
             children: [
               TextFormField(
+                //controller: controller,
                 decoration: InputDecoration(
                   hintText: '入力してください',
                   labelText: 'テキスト',
                 ),
                 onSaved: (String? value) {
-                  _text = value!;
+                  textState.state = value!;
+                  //controller.clear();
                 },
               ),
             ],
